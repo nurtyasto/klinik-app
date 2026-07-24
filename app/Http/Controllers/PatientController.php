@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Patient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PatientController extends Controller
 {
@@ -15,7 +16,7 @@ class PatientController extends Controller
 
     public function create()
     {
-        // 1. Pindahkan logika generate No RM ke sini
+        // Logika generate No RM otomatis saat halaman form dibuka
         $lastPatient = Patient::orderBy('id', 'desc')->first();
         
         if ($lastPatient && preg_match('/^RM-(\d+)$/', $lastPatient->no, $matches)) {
@@ -27,21 +28,24 @@ class PatientController extends Controller
         
         $nextNo = 'RM-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
-        // 2. Kirim variabel $nextNo ke view
         return view('patients.create', compact('nextNo'));
     }
 
     public function store(Request $request)
     {
-        // 3. Kembalikan validasi 'no', pastikan unique untuk menghindari bentrok 
-        // jika ada 2 admin yang membuka form di saat bersamaan.
         $validated = $request->validate([
             'no' => 'required|string|max:16|unique:patients,no',
             'name' => 'required|string|max:100',
             'gender' => 'required|string|max:10',
             'age' => 'required|numeric',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi foto
             'address' => 'nullable|string|max:255',
         ]);
+
+        // Tangani proses upload foto jika ada
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('patients', 'public');
+        }
 
         Patient::create($validated);
         return redirect()->route('patients.index')->with('success', 'Data Pasien berhasil ditambahkan!');
@@ -58,8 +62,19 @@ class PatientController extends Controller
             'name' => 'required|string|max:100',
             'gender' => 'required|string|max:10',
             'age' => 'required|numeric',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Validasi foto
             'address' => 'nullable|string|max:255',
         ]);
+
+        // Tangani pembaruan foto
+        if ($request->hasFile('photo')) {
+            // Hapus foto lama jika ada
+            if ($patient->photo && Storage::disk('public')->exists($patient->photo)) {
+                Storage::disk('public')->delete($patient->photo);
+            }
+            // Simpan foto baru
+            $validated['photo'] = $request->file('photo')->store('patients', 'public');
+        }
 
         $patient->update($validated);
         return redirect()->route('patients.index')->with('success', 'Data Pasien berhasil diperbarui!');
@@ -67,6 +82,11 @@ class PatientController extends Controller
 
     public function destroy(Patient $patient)
     {
+        // Hapus file foto dari storage jika pasien dihapus
+        if ($patient->photo && Storage::disk('public')->exists($patient->photo)) {
+            Storage::disk('public')->delete($patient->photo);
+        }
+
         $patient->delete();
         return redirect()->route('patients.index')->with('success', 'Data Pasien berhasil dihapus!');
     }

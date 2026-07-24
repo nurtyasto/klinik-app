@@ -15,6 +15,7 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 border-y border-gray-200 text-gray-600 text-sm">
+                        <th class="p-4 font-semibold">Foto</th>
                         <th class="p-4 font-semibold">No RM</th>
                         <th class="p-4 font-semibold">Nama Pasien</th>
                         <th class="p-4 font-semibold">L/P</th>
@@ -26,6 +27,16 @@
                 <tbody class="text-sm">
                     @forelse($patients as $patient)
                     <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <!-- Kolom Foto Pasien -->
+                        <td class="p-4">
+                            @if($patient->photo)
+                                <img src="{{ asset('storage/' . $patient->photo) }}" alt="Foto {{ $patient->name }}" class="w-10 h-10 object-cover rounded-full border border-gray-200 shadow-sm">
+                            @else
+                                <div class="w-10 h-10 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold text-xs">
+                                    {{ strtoupper(substr($patient->name, 0, 2)) }}
+                                </div>
+                            @endif
+                        </td>
                         <td class="p-4 font-medium text-gray-900">{{ $patient->no }}</td>
                         <td class="p-4 font-medium">{{ $patient->name }}</td>
                         <td class="p-4">{{ $patient->gender }}</td>
@@ -44,7 +55,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="p-6 text-center text-gray-500">
+                        <td colspan="7" class="p-6 text-center text-gray-500">
                             Belum ada data pasien terdaftar.
                         </td>
                     </tr>

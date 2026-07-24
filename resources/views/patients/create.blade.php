@@ -4,7 +4,8 @@
     </x-slot>
 
     <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 max-w-2xl">
-        <form action="{{ route('patients.store') }}" method="POST">
+        <!-- Tambahkan enctype multipart/form-data untuk mendukung upload file -->
+        <form action="{{ route('patients.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <!-- No Rekam Medis (Auto-generated dari Controller & Read-Only) -->
@@ -45,6 +46,15 @@
                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('age') border-red-500 @enderror" 
                        placeholder="Contoh: 25" required>
                 @error('age') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <!-- Foto Pasien -->
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="photo">Foto Pasien (Opsional)</label>
+                <input type="file" name="photo" id="photo" accept="image/png, image/jpeg, image/jpg"
+                       class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-750 hover:file:bg-blue-100 border border-gray-300 rounded-lg @error('photo') border-red-500 @enderror">
+                <p class="text-xs text-gray-500 mt-1">Format yang didukung: JPG, JPEG, PNG. Maksimal 2MB.</p>
+                @error('photo') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <!-- Alamat -->
